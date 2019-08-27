@@ -1,5 +1,5 @@
 <template>
-    <div class="feed">
+    <div class="feed" ref="feed">
         <ul v-if="contact">
             <li 
             v-for="(message,index) in messages"
@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import { setTimeout } from 'timers';
     export default {
         props : {
             messages : {
@@ -23,6 +24,22 @@
             },
             contact : {
                 type : Object
+            }
+        },
+        methods: {
+            scrollToBottom(){
+                setTimeout(()=>{
+                   this.$ref.feed.scrollTop = this.$ref.feed.scrollHeight - this.$ref.feed.clientHeight
+                },50).bind(this);
+              
+            }
+        },
+        watch : {
+            contact(contact){
+              this.scrollToBottom()
+            },
+            messages(messages){
+              this.scrollToBottom()
             }
         }
     }

@@ -91,4 +91,14 @@ class ContactController extends Controller
 
         return response()->json($messages);
     }
+    public function sendMessage(Request $request){
+        $message= Message::create([
+           'from' => auth()->user()->id,
+           'to' => $request->contact_id,
+           'text' => $request->text,
+
+        ]);
+
+        return response()->json($message);
+    }
 }
