@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageEvent;
 use App\Message;
 use App\User;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class ContactController extends Controller
      */
     public function index()
     {
-        $contacts = User::all();
+        $contacts = User::where('id','!=',auth()->user()->id)->get();
 
         return response()->json(['contacts' => $contacts],200);
     }
@@ -87,8 +88,10 @@ class ContactController extends Controller
         //
     }
     public function getMessages($id){
-        $messages= Message::where('from', $id)->orWhere('to' ,$id)->get();
-
+        $messages= Message::where('from',$id)->where('to' ,auth()->user()->id)->orWhere('to',$id)->where('from' ,auth()->user()->id)->get();
+        
+        
+         
         return response()->json($messages);
     }
     public function sendMessage(Request $request){
@@ -98,6 +101,8 @@ class ContactController extends Controller
            'text' => $request->text,
 
         ]);
+
+        broadcast(new MessageEvent($message));
 
         return response()->json($message);
     }

@@ -29,8 +29,8 @@ import { setTimeout } from 'timers';
         methods: {
             scrollToBottom(){
                 setTimeout(()=>{
-                   this.$ref.feed.scrollTop = this.$ref.feed.scrollHeight - this.$ref.feed.clientHeight
-                },50).bind(this);
+                   this.$refs.feed.scrollTop = this.$refs.feed.scrollHeight - this.$refs.feed.clientHeight
+                },50);
               
             }
         },

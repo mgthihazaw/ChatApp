@@ -1863,7 +1863,8 @@ __webpack_require__.r(__webpack_exports__);
     return {
       selectedContact: {},
       messages: [],
-      contacts: ''
+      contacts: "",
+      activeUser: []
     };
   },
   methods: {
@@ -1877,13 +1878,46 @@ __webpack_require__.r(__webpack_exports__);
     },
     saveNewMessage: function saveNewMessage(text) {
       this.messages.push(text);
+    },
+    handleIncoming: function handleIncoming(message) {
+      this.messages.push(message);
     }
   },
   created: function created() {
     var _this2 = this;
 
-    axios.get('/contacts').then(function (response) {
+    axios.get("/contacts").then(function (response) {
       _this2.contacts = response.data.contacts;
+    });
+    console.log(this.user.id);
+    Echo["private"]("messages.".concat(this.user.id)).listen("MessageEvent", function (e) {
+      _this2.handleIncoming(e.message);
+    });
+    Echo.join("chat").here(function (users) {
+      _this2.activeUser = users;
+      console.log(users.length + " Users is Active Now");
+      users.forEach(function (user) {
+        console.log("".concat(user.email, "  is Active Now"));
+      });
+    }).joining(function (user) {
+      console.log("".concat(user.email, " is join"));
+
+      if (!_this2.activeUser.includes(user)) {
+        _this2.activeUser.push(user);
+      }
+    }).leaving(function (user) {
+      console.log("".concat(user.email, " is leave"));
+      var userIndex = '';
+
+      _this2.activeUser.forEach(function (el, index) {
+        console.log(el, index);
+
+        if (el.id === user.id) {
+          userIndex = index;
+        }
+      });
+
+      _this2.activeUser.splice(userIndex, 1);
     });
   }
 });
@@ -1920,9 +1954,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
-    contacts: {}
+    contacts: {},
+    activeUser: {}
   },
   data: function data() {
     return {
@@ -1933,7 +1972,26 @@ __webpack_require__.r(__webpack_exports__);
     selectContact: function selectContact(index, contact) {
       this.selected = index;
       this.$emit("selected", contact);
+    },
+    activeNow: function activeNow(contact) {
+      if (contact) {
+        var data = this.activeUser.some(function (el) {
+          return el.id === contact.id;
+        });
+        return data;
+      }
     }
+  },
+  created: function created() {// this.$on('joining',(user)=>{
+    //   if (!this.activeUser.includes(user)) {
+    //       this.activeUser.push(user);
+    //     }
+    // })
+    // this.$on('leaving',(user)=>{
+    //   this.activeUser.some(function(el,index) {
+    //        el.id === user.id ? this.activeUser.slice(index,1) : ''
+    //     });
+    // })
   }
 });
 
@@ -2070,8 +2128,8 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       Object(timers__WEBPACK_IMPORTED_MODULE_0__["setTimeout"])(function () {
-        _this.$ref.feed.scrollTop = _this.$ref.feed.scrollHeight - _this.$ref.feed.clientHeight;
-      }, 50).bind(this);
+        _this.$refs.feed.scrollTop = _this.$refs.feed.scrollHeight - _this.$refs.feed.clientHeight;
+      }, 50);
     }
   },
   watch: {
@@ -6619,7 +6677,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.chat-app[data-v-1da0bc8e] {\n    display :flex;\n}\n", ""]);
+exports.push([module.i, "\n.chat-app[data-v-1da0bc8e] {\r\n  display: flex;\n}\r\n", ""]);
 
 // exports
 
@@ -48481,7 +48539,7 @@ var render = function() {
       }),
       _vm._v(" "),
       _c("ContactList", {
-        attrs: { contacts: _vm.contacts },
+        attrs: { contacts: _vm.contacts, activeUser: _vm.activeUser },
         on: { selected: _vm.startConversationWith }
       })
     ],
@@ -48511,37 +48569,52 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "contacts-list" }, [
-    _c(
-      "ul",
-      _vm._l(_vm.contacts, function(contact, index) {
-        return _c(
-          "li",
-          {
-            key: contact.id,
-            class: { selected: index == _vm.selected },
-            on: {
-              click: function($event) {
-                return _vm.selectContact(index, contact)
-              }
-            }
-          },
-          [
-            _c("div", { staticClass: "avatar" }, [
-              _c("img", {
-                attrs: { src: contact.profile_image, alt: contact.name }
-              })
-            ]),
-            _vm._v(" "),
-            _c("div", { staticClass: "contact" }, [
-              _c("p", { staticClass: "name" }, [_vm._v(_vm._s(contact.name))]),
-              _vm._v(" "),
-              _c("p", { staticClass: "email" }, [_vm._v(_vm._s(contact.email))])
-            ])
-          ]
+    _vm.activeUser.length > 0
+      ? _c(
+          "ul",
+          _vm._l(_vm.contacts, function(contact, index) {
+            return _c(
+              "li",
+              {
+                key: contact.id,
+                class: { selected: index == _vm.selected },
+                on: {
+                  click: function($event) {
+                    return _vm.selectContact(index, contact)
+                  }
+                }
+              },
+              [
+                _c("div", { staticClass: "avatar" }, [
+                  _c("img", {
+                    attrs: { src: contact.profile_image, alt: contact.name }
+                  })
+                ]),
+                _vm._v(" "),
+                _c("div", { staticClass: "contact" }, [
+                  _c("p", { staticClass: "name" }, [
+                    _vm._v(
+                      "\n          " +
+                        _vm._s(contact.name) +
+                        "      \n          "
+                    ),
+                    _vm.activeNow(contact)
+                      ? _c("a", { staticClass: "badge badge-success" }, [
+                          _vm._v("active")
+                        ])
+                      : _vm._e()
+                  ]),
+                  _vm._v(" "),
+                  _c("p", { staticClass: "email" }, [
+                    _vm._v(_vm._s(contact.email))
+                  ])
+                ])
+              ]
+            )
+          }),
+          0
         )
-      }),
-      0
-    )
+      : _vm._e()
   ])
 }
 var staticRenderFns = []
@@ -60888,8 +60961,7 @@ window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
   broadcaster: 'pusher',
   key: 'myKey',
   wsHost: window.location.hostname,
-  wsPort: 6001,
-  disableStats: true
+  wsPort: 6001
 });
 
 /***/ }),

@@ -1,6 +1,6 @@
 <template>
   <div class="contacts-list">
-    <ul>
+    <ul v-if="activeUser.length>0">
       <li
         v-for="(contact,index) in contacts"
         :key="contact.id"
@@ -11,7 +11,11 @@
           <img :src="contact.profile_image" :alt="contact.name" />
         </div>
         <div class="contact">
-          <p class="name">{{ contact.name }}</p>
+          <p class="name">
+            {{ contact.name }} &nbsp; &nbsp; &nbsp;
+            <a class="badge badge-success" v-if="activeNow(contact)">active</a>
+          </p>
+
           <p class="email">{{ contact.email }}</p>
         </div>
       </li>
@@ -22,7 +26,8 @@
 <script>
 export default {
   props: {
-    contacts: {}
+    contacts: {},
+    activeUser: {}
   },
   data() {
     return {
@@ -33,7 +38,34 @@ export default {
     selectContact(index, contact) {
       this.selected = index;
       this.$emit("selected", contact);
-    }
+    },
+    activeNow(contact) {
+      if(contact){
+          let data = this.activeUser.some(function(el) {
+        return el.id === contact.id;
+      });
+      return data;
+      }
+     
+      
+    },
+    // joining(user){
+    //   if (!this.activeUser.includes(user)) {
+    //       this.contacts.push(user);
+    //     }
+    // },
+  },
+  created(){
+    // this.$on('joining',(user)=>{
+    //   if (!this.activeUser.includes(user)) {
+    //       this.activeUser.push(user);
+    //     }
+    // })
+    // this.$on('leaving',(user)=>{
+    //   this.activeUser.some(function(el,index) {
+    //        el.id === user.id ? this.activeUser.slice(index,1) : ''
+    //     });
+    // })
   }
 };
 </script>
@@ -55,34 +87,34 @@ export default {
       position: relative;
       cursor: pointer;
 
-      &.selected{
-          background: #9885b6;
+      &.selected {
+        background: #9885b6;
       }
 
       .avatar {
-          flex :1;
+        flex: 1;
         display: flex;
         align-items: center;
 
         img {
-            width :35px;
-            border-radius : 50px;
-            margin : 0 auto;
+          width: 35px;
+          border-radius: 50px;
+          margin: 0 auto;
         }
       }
-      .contact{
-          flex :3;
-          font-size : 13px;
-          overflow: hidden;
-          display : flex;
-          flex-direction: column;
-          justify-content : center;
-          p{
-              margin : 0;
-              &.name {
-                  font-weight : bold
-              }
+      .contact {
+        flex: 3;
+        font-size: 13px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        p {
+          margin: 0;
+          &.name {
+            font-weight: bold;
           }
+        }
       }
     }
   }
