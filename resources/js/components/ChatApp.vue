@@ -37,7 +37,13 @@ export default {
       this.messages.push(text);
     },
     handleIncoming(message) {
-      this.messages.push(message);
+      if(this.selectedContact && message.from == this.selectedContact.id){
+        this.messages.push(message);
+        return;
+      }
+      if(message.to == user.id){
+        alert(`send message to you`)
+      }
     }
   },
   created() {
